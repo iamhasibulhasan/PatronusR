@@ -10,6 +10,31 @@ namespace PatronusR.Extensions
     public static class ServiceCollectionExtensions
     {
         /// <summary>
+        /// Registers PatronusR services with fluent configuration
+        /// </summary>
+        /// <param name="services">Service collection</param>
+        /// <param name="configuration">Configuration action</param>
+        /// <returns>Service collection for chaining</returns>
+        public static IServiceCollection AddPatronusR(this IServiceCollection services, Action<PatronusRConfiguration> configuration)
+        {
+            // Register core services
+            services.AddScoped<IPatronusR, Implementation.PatronusR>();
+            services.AddScoped<ISender, Implementation.PatronusR>();
+
+            // Create configuration and let user configure it
+            var config = new PatronusRConfiguration(services);
+            configuration(config);
+
+            // Register handlers from configured assemblies
+            if (config.AssembliesToScan.Any())
+            {
+                RegisterHandlersFromAssemblies(services, config.AssembliesToScan.ToArray());
+            }
+
+            return services;
+        }
+
+        /// <summary>
         /// Registers PatronusR services
         /// </summary>
         /// <param name="services">Service collection</param>
